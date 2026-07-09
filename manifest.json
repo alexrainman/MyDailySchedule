@@ -1,6 +1,6 @@
 {
-  "name": "My Daily Schedule",
-  "short_name": "My Day",
+  "name": "MY DAILY ROUTINE",
+  "short_name": "MY DAILY ROUTINE",
   "description": "A simple daily planner and focus app.",
   "start_url": "./",
   "scope": "./",
