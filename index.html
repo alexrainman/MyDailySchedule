@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F3">
+<meta name="background-color" content="#FAF8F3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Day">
+<title>My Day</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root{
+    --bg: #FAF8F3;
+    --surface: #FFFFFF;
+    --ink: #2B2B28;
+    --ink-soft: #6B6960;
+    --line: #E7E3D8;
+    --teal: #2F6F62;
+    --teal-soft: #E3EEEA;
+    --amber: #B5762B;
+    --amber-soft: #FBEFE0;
+    --blue: #3D6A8C;
+    --blue-soft: #E6EEF3;
+    --coral: #B25A3E;
+    --coral-soft: #F6E8E1;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  .app{max-width:640px;margin:0 auto;padding:0 18px;}
+
+  header.top{
+    padding:28px 18px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  header.top h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-0.01em;}
+  .date-pill{font-size:13px;color:var(--ink-soft);font-weight:500;}
+
+  nav.tabs{
+    display:flex;
+    gap:8px;
+    padding:0 18px 18px;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .tab-btn{
+    flex:1;
+    border:none;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:999px;
+    padding:11px 8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--ink);
+    color:var(--bg);
+    border-color:var(--ink);
+  }
+  .tab-btn:active{transform:scale(0.97);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* Progress ring summary */
+  .progress-card{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:var(--line);stroke-width:8;}
+  .ring-fg{fill:none;stroke:var(--teal);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .4s ease;}
+  .ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;}
+  .progress-text h2{font-size:16px;margin:0 0 2px;font-weight:700;}
+  .progress-text p{font-size:13px;color:var(--ink-soft);margin:0;}
+
+  /* Timer */
+  .timer-card{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:20px;
+    text-align:center;
+  }
+  .timer-display{
+    font-size:44px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    margin:6px 0 14px;
+    font-variant-numeric:tabular-nums;
+  }
+  .timer-label{font-size:13px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;}
+  .timer-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .timer-btn{
+    border:1.5px solid var(--line);
+    background:var(--bg);
+    border-radius:999px;
+    padding:10px 18px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .timer-btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .timer-btn:active{transform:scale(0.96);}
+  .timer-presets{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+  .preset-chip{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+    border:1.5px solid var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    font-weight:600;
+    cursor:pointer;
+  }
+  .preset-chip.active{background:var(--teal-soft);color:var(--teal);border-color:var(--teal);}
+
+  /* Section blocks */
+  .block-section{margin-bottom:22px;}
+  .block-section-title{
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    margin:0 0 10px 2px;
+  }
+
+  .task-card{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .task-card.done{background:var(--teal-soft);border-color:var(--teal);}
+  .check{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:2px solid var(--line);
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s ease;
+  }
+  .task-card.done .check{background:var(--teal);border-color:var(--teal);}
+  .check svg{width:14px;height:14px;opacity:0;transition:opacity .15s ease;}
+  .task-card.done .check svg{opacity:1;}
+  .task-info{flex:1;min-width:0;}
+  .task-info .t-name{font-size:15px;font-weight:600;margin:0 0 2px;}
+  .task-card.done .t-name{text-decoration:line-through;color:var(--ink-soft);}
+  .task-info .t-time{font-size:12px;color:var(--ink-soft);margin:0;}
+  .task-emoji{font-size:22px;flex-shrink:0;width:30px;text-align:center;}
+
+  /* Add task row */
+  .add-row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .add-row input{
+    flex:1;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:11px 14px;
+    font-size:14px;
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .add-row input:focus{outline:none;border-color:var(--teal);}
+  .add-row button{
+    border:none;
+    background:var(--ink);
+    color:var(--bg);
+    border-radius:var(--radius-sm);
+    padding:11px 18px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  .reset-row{text-align:center;margin-top:18px;}
+  .reset-row button{
+    border:none;
+    background:none;
+    color:var(--ink-soft);
+    font-size:13px;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px;
+  }
+
+  /* Resources */
+  .res-group{margin-bottom:22px;}
+  .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:420px){.res-grid{grid-template-columns:1fr;}}
+  .res-card{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px;
+    text-decoration:none;
+    color:var(--ink);
+    display:block;
+  }
+  .res-card:active{transform:scale(0.98);}
+  .res-icon{font-size:24px;margin-bottom:8px;display:block;}
+  .res-card .r-name{font-size:14px;font-weight:700;margin:0 0 3px;}
+  .res-card .r-desc{font-size:12px;color:var(--ink-soft);margin:0;line-height:1.4;}
+
+  .empty-note{
+    text-align:center;
+    padding:30px 20px;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+
+  .video-card{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    text-decoration:none;
+    color:var(--ink);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    margin-bottom:10px;
+  }
+  .video-card:active{transform:scale(0.98);}
+  .video-icon{
+    width:38px;height:38px;
+    border-radius:10px;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+  }
+  .video-info{flex:1;min-width:0;}
+  .video-info .v-name{font-size:14px;font-weight:700;margin:0 0 3px;}
+  .video-info .v-desc{font-size:12px;color:var(--ink-soft);margin:0 0 6px;line-height:1.45;}
+  .v-tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:600;
+    padding:2px 9px;
+    border-radius:999px;
+  }
+  .watch-intro{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 18px;
+    padding:14px 16px;
+    background:var(--amber-soft);
+    border-radius:var(--radius-sm);
+    border-left:3px solid var(--amber);
+  }
+
+  /* Task modal */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(43,43,40,0.5);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+  }
+  .modal-overlay.open{display:flex;}
+  @media (min-width:640px){
+    .modal-overlay{align-items:center;}
+  }
+  .modal-sheet{
+    background:var(--bg);
+    border-radius:24px 24px 0 0;
+    width:100%;
+    max-width:640px;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:18px 18px 28px;
+    animation:slideUp .2s ease;
+  }
+  @media (min-width:640px){
+    .modal-sheet{border-radius:var(--radius); max-height:85vh; margin:0 18px;}
+  }
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  .modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .modal-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;margin:0;}
+  .modal-close{
+    border:none;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    width:34px;height:34px;
+    border-radius:50%;
+    font-size:16px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+
+  .modal-timer-bar{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .modal-timer-display{
+    font-size:28px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .modal-timer-state{font-size:12px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
+  .modal-timer-btn{
+    border:none;
+    background:var(--teal);
+    color:#fff;
+    border-radius:999px;
+    padding:9px 18px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .modal-timer-btn.paused{background:var(--amber);}
+
+  .video-frame-wrap{
+    position:relative;
+    width:100%;
+    padding-bottom:56.25%;
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    background:#000;
+    margin-bottom:14px;
+  }
+  .video-frame-wrap iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:none;
+  }
+
+  .site-link-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--blue-soft);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    margin-bottom:14px;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .site-link-card .s-label{font-size:14px;font-weight:700;}
+  .site-link-card .s-sub{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .site-link-arrow{font-size:18px;color:var(--blue);}
+
+  .modal-done-banner{
+    text-align:center;
+    background:var(--teal-soft);
+    color:var(--teal);
+    border-radius:var(--radius-sm);
+    padding:12px;
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:14px;
+    display:none;
+  }
+  .modal-done-banner.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <h1>My Day</h1>
+    <span class="date-pill" id="dateLabel"></span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="today">Today</button>
+    <button class="tab-btn" data-view="timer">Timer</button>
+    <button class="tab-btn" data-view="learn">Learn</button>
+    <button class="tab-btn" data-view="watch">Watch</button>
+  </nav>
+
+  <main>
+    <!-- TODAY VIEW -->
+    <section class="view active" id="view-today">
+      <div class="progress-card">
+        <div class="ring-wrap">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle class="ring-bg" cx="32" cy="32" r="26"></circle>
+            <circle class="ring-fg" id="ringFg" cx="32" cy="32" r="26" stroke-dasharray="163.4" stroke-dashoffset="163.4"></circle>
+          </svg>
+          <div class="ring-label" id="ringLabel">0%</div>
+        </div>
+        <div class="progress-text">
+          <h2 id="progressHeadline">Let's get started</h2>
+          <p id="progressSub">0 of 0 tasks done</p>
+        </div>
+      </div>
+
+      <div class="block-section" data-group="morning">
+        <p class="block-section-title">☀️ Morning routine</p>
+        <div id="taskList-morning"></div>
+      </div>
+
+      <div class="block-section" data-group="learning">
+        <p class="block-section-title">📚 Learning time</p>
+        <div id="taskList-learning"></div>
+      </div>
+
+      <div class="block-section" data-group="workout">
+        <p class="block-section-title">💪 Workout</p>
+        <div id="taskList-workout"></div>
+      </div>
+
+      <div class="block-section" data-group="evening">
+        <p class="block-section-title">🌙 Evening routine</p>
+        <div id="taskList-evening"></div>
+      </div>
+
+      <div class="block-section" data-group="extra">
+        <p class="block-section-title">➕ Extra tasks</p>
+        <div id="taskList-extra"></div>
+        <div class="add-row">
+          <input type="text" id="newTaskInput" placeholder="Add a task...">
+          <button id="addTaskBtn">Add</button>
+        </div>
+      </div>
+
+      <div class="reset-row">
+        <button id="resetDayBtn">Reset today's checklist</button>
+      </div>
+    </section>
+
+    <!-- TIMER VIEW -->
+    <section class="view" id="view-timer">
+      <div class="timer-card">
+        <div class="timer-label" id="timerPhase">Focus time</div>
+        <div class="timer-display" id="timerDisplay">15:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn primary" id="startPauseBtn">Start</button>
+          <button class="timer-btn" id="resetTimerBtn">Reset</button>
+        </div>
+        <div class="timer-presets" id="timerPresets">
+          <button class="preset-chip" data-mins="10">10 min</button>
+          <button class="preset-chip active" data-mins="15">15 min</button>
+          <button class="preset-chip" data-mins="20">20 min</button>
+          <button class="preset-chip" data-mins="5">5 min break</button>
+        </div>
+      </div>
+      <div class="empty-note">Use this for focused work sessions. When time's up, take a break before starting the next task.</div>
+    </section>
+
+    <!-- LEARN VIEW -->
+    <section class="view" id="view-learn">
+
+      <div class="res-group">
+        <p class="block-section-title">Math</p>
+        <div class="res-grid">
+          <a class="res-card" href="https://www.khanacademy.org" target="_blank">
+            <span class="res-icon">📐</span>
+            <p class="r-name">Khan Academy</p>
+            <p class="r-desc">Self-paced math lessons, any level</p>
+          </a>
+          <a class="res-card" href="https://www.prodigygame.com" target="_blank">
+            <span class="res-icon">🎮</span>
+            <p class="r-name">Prodigy Math</p>
+            <p class="r-desc">Math practice as a game</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="res-group">
+        <p class="block-section-title">Science</p>
+        <div class="res-grid">
+          <a class="res-card" href="https://www.ck12.org" target="_blank">
+            <span class="res-icon">🔬</span>
+            <p class="r-name">CK-12</p>
+            <p class="r-desc">Free science lessons & videos</p>
+          </a>
+          <a class="res-card" href="https://phet.colorado.edu" target="_blank">
+            <span class="res-icon">⚗️</span>
+            <p class="r-name">PhET Sims</p>
+            <p class="r-desc">Interactive science experiments</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="res-group">
+        <p class="block-section-title">Life skills</p>
+        <div class="res-grid">
+          <a class="res-card" href="https://www.practicalmoneyskills.com" target="_blank">
+            <span class="res-icon">💰</span>
+            <p class="r-name">Money Skills</p>
+            <p class="r-desc">Budgeting & spending basics</p>
+          </a>
+          <a class="res-card" href="https://lifeskillswinner.com" target="_blank">
+            <span class="res-icon">🏠</span>
+            <p class="r-name">LifeSkills Winner</p>
+            <p class="r-desc">Daily living skills for teens</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="res-group">
+        <p class="block-section-title">Computer skills</p>
+        <div class="res-grid">
+          <a class="res-card" href="https://www.typing.com" target="_blank">
+            <span class="res-icon">⌨️</span>
+            <p class="r-name">Typing.com</p>
+            <p class="r-desc">Learn to type, game-style</p>
+          </a>
+          <a class="res-card" href="https://scratch.mit.edu" target="_blank">
+            <span class="res-icon">🧩</span>
+            <p class="r-name">Scratch</p>
+            <p class="r-desc">Build projects with code blocks</p>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- WATCH VIEW -->
+    <section class="view" id="view-watch">
+      <p class="watch-intro">These are channels and playlists, not single videos — watch one together first to make sure it's a good fit, then he can pick from there. Quality matters more than quantity here.</p>
+
+      <div class="res-group">
+        <p class="block-section-title">Life skills & independence</p>
+
+        <a class="video-card" href="https://www.youtube.com/@LifeSkillsLady" target="_blank">
+          <div class="video-icon" style="background:var(--coral-soft);">🧭</div>
+          <div class="video-info">
+            <p class="v-name">Life Skills Lady</p>
+            <p class="v-desc">Made specifically for students on the autism spectrum — goes beyond chores into the full range of independence skills.</p>
+            <span class="v-tag" style="background:var(--coral-soft);color:var(--coral);">Best starting point</span>
+          </div>
+        </a>
+
+        <a class="video-card" href="https://www.youtube.com/results?search_query=Life+Skills+2+Learn+teens+developmental+disabilities+playlist" target="_blank">
+          <div class="video-icon" style="background:var(--coral-soft);">📋</div>
+          <div class="video-info">
+            <p class="v-name">Life Skills 2 Learn — Teens & Adults playlist</p>
+            <p class="v-desc">Functional, age-appropriate videos built for teens with developmental disabilities. Made by a speech-language pathologist.</p>
+          </div>
+        </a>
+
+        <a class="video-card" href="https://www.youtube.com/results?search_query=Lets+Cook+Life+Skills+autism" target="_blank">
+          <div class="video-icon" style="background:var(--coral-soft);">🍳</div>
+          <div class="video-info">
+            <p class="v-name">Let's Cook Life Skills</p>
+            <p class="v-desc">Step-by-step cooking tutorials made for kids on the autism spectrum. Pause and cook along in the kitchen.</p>
+          </div>
+        </a>
+
+        <a class="video-card" href="https://www.youtube.com/results?search_query=Skills+to+Pay+the+Bills+Department+of+Labor" target="_blank">
+          <div class="video-icon" style="background:var(--coral-soft);">💬</div>
+          <div class="video-info">
+            <p class="v-name">Skills to Pay the Bills</p>
+            <p class="v-desc">A U.S. Department of Labor series on communication, teamwork, and problem-solving — good for when he's a bit older.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="res-group">
+        <p class="block-section-title">Math & science (videos only)</p>
+
+        <a class="video-card" href="https://www.youtube.com/@khanacademy" target="_blank">
+          <div class="video-icon" style="background:var(--blue-soft);">📐</div>
+          <div class="video-info">
+            <p class="v-name">Khan Academy (YouTube)</p>
+            <p class="v-desc">Same videos as the full course, without the practice problems. Better used inside khanacademy.org, but fine for passive watching too.</p>
+          </div>
+        </a>
+
+        <a class="video-card" href="https://www.youtube.com/@scishow" target="_blank">
+          <div class="video-icon" style="background:var(--blue-soft);">🔭</div>
+          <div class="video-info">
+            <p class="v-name">SciShow</p>
+            <p class="v-desc">Short, punchy science explainers on real-world topics. Good for free-choice watching time.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="res-group">
+        <p class="block-section-title">Want a real human teacher too?</p>
+        <a class="video-card" href="https://www.youtube.com/results?search_query=Model+Me+Kids+social+skills+autism" target="_blank">
+          <div class="video-icon" style="background:var(--teal-soft);">👥</div>
+          <div class="video-info">
+            <p class="v-name">Model Me Kids</p>
+            <p class="v-desc">Real teens modeling social situations — useful if conversations or group settings are something he's working on.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3 class="modal-title"><span id="modalEmoji">✅</span><span id="modalTaskName">Task</span></h3>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-done-banner" id="modalDoneBanner">✓ Marked as done!</div>
+
+    <div class="modal-timer-bar">
+      <div>
+        <div class="modal-timer-display" id="modalTimerDisplay">00:00</div>
+        <div class="modal-timer-state" id="modalTimerState">Ready</div>
+      </div>
+      <button class="modal-timer-btn" id="modalTimerBtn">Start</button>
+    </div>
+
+    <a class="site-link-card" id="modalVideoLink" href="#" target="_blank" style="display:none;">
+      <div>
+        <div class="s-label" id="modalVideoLabel">Watch on YouTube</div>
+        <div class="s-sub">Opens in a new tab — come back here when done</div>
+      </div>
+      <span class="site-link-arrow">▶</span>
+    </a>
+
+    <a class="site-link-card" id="modalSiteLink" href="#" target="_blank" style="display:none;">
+      <div>
+        <div class="s-label" id="modalSiteLabel">Open site</div>
+        <div class="s-sub">Opens in a new tab — come back here when done</div>
+      </div>
+      <span class="site-link-arrow">↗</span>
+    </a>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---------- Tabs ----------
+  const tabs = document.querySelectorAll('.tab-btn');
+  const views = document.querySelectorAll('.view');
+  tabs.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      tabs.forEach(b=>b.classList.remove('active'));
+      views.forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-'+btn.dataset.view).classList.add('active');
+      if(btn.dataset.view==='timer') renderTimer();
+    });
+  });
+
+  // ---------- Date label ----------
+  const dateLabel = document.getElementById('dateLabel');
+  const today = new Date();
+  dateLabel.textContent = today.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+
+  // ---------- Task storage (per-day, resets automatically each new day) ----------
+  const todayKey = today.toISOString().slice(0,10);
+  const STORAGE_KEY = 'myday_tasks_'+todayKey;
+  const DEFAULT_TASKS = [
+    // Morning routine — no single verified video per task, so these use a search link (opens YouTube in new tab)
+    {id:'m1', group:'morning', name:'Wake up', emoji:'⏰', time:'', done:false, timerSeconds:60, videoQuery:'morning motivation wake up routine for teens'},
+    {id:'m2', group:'morning', name:'Make your bed', emoji:'🛏️', time:'', done:false, timerSeconds:180, videoQuery:'how to make your bed step by step for kids'},
+    {id:'m3', group:'morning', name:'Get dressed', emoji:'👕', time:'', done:false, timerSeconds:300, videoQuery:'getting dressed independently autism social story'},
+    {id:'m4', group:'morning', name:'Brush your teeth', emoji:'🪥', time:'2 min', done:false, timerSeconds:120, videoQuery:'how to brush your teeth properly 2 minutes kids'},
+    {id:'m5', group:'morning', name:'Wash your face', emoji:'🧼', time:'', done:false, timerSeconds:120, videoQuery:'how to wash your face properly for teens'},
+    {id:'m5b', group:'morning', name:'Put on deodorant', emoji:'🧴', time:'', done:false, timerSeconds:60, videoQuery:'how to apply deodorant properly for teens'},
+    {id:'m6', group:'morning', name:'Prepare breakfast', emoji:'🍳', time:'', done:false, timerSeconds:600, videoQuery:'easy healthy breakfast recipes teens can make'},
+    {id:'m7', group:'morning', name:'Eat breakfast', emoji:'🥣', time:'', done:false, timerSeconds:600, videoQuery:'why breakfast is important healthy eating kids'},
+    {id:'m8', group:'morning', name:'Wash the dishes', emoji:'🍽️', time:'', done:false, timerSeconds:300, videoQuery:'how to wash dishes properly step by step'},
+    // Learning time — link directly to the real course site instead of YouTube
+    {id:'l1', group:'learning', name:'Math practice (CK-12)', emoji:'📐', time:'9:00 AM · 45-60 min', done:false, timerSeconds:2700, siteUrl:'https://www.ck12.org/browse/', siteLabel:'Open CK-12'},
+    {id:'l2', group:'learning', name:'Science lesson (CK-12)', emoji:'🔬', time:'10:00 AM · 45-60 min', done:false, timerSeconds:2700, siteUrl:'https://www.ck12.org/browse/', siteLabel:'Open CK-12'},
+    {id:'l3', group:'learning', name:'Life skills practice', emoji:'🏠', time:'2:00 PM · 45-60 min', done:false, timerSeconds:2700, videoUrl:'https://www.youtube.com/@Smartteenskills'},
+    // Workout
+    {id:'w1', group:'workout', name:'Gym / workout', emoji:'🏋️', time:'4:00 PM · 45-60 min', done:false, timerSeconds:2700, videoUrl:'https://www.youtube.com/watch?v=v8CRs_JK_HA&list=PLZeBwGx-VLPsJ6Ucsov3lYJ24xTCiB_Bz'},
+    // Evening routine
+    {id:'e1', group:'evening', name:'Take a shower', emoji:'🚿', time:'5:00 PM · 15-20 min', done:false},
+    {id:'e2', group:'evening', name:'Eat dinner', emoji:'🍽️', time:'6:00 PM · 30-45 min', done:false},
+    {id:'e3', group:'evening', name:'Watch TV', emoji:'📺', time:'7:00 PM · 1-2 hours', done:false},
+    {id:'e4', group:'evening', name:'Brush your teeth', emoji:'🪥', time:'9:30 PM · 2 min', done:false},
+    {id:'e5', group:'evening', name:'Go to sleep', emoji:'🌙', time:'10:00 PM', done:false},
+  ];
+
+  function loadTasks(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return DEFAULT_TASKS.map(t=>({...t}));
+  }
+  function saveTasks(tasks){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }catch(e){}
+  }
+
+  let tasks = loadTasks();
+  // If saved data is from an older format (missing group or timerSeconds), discard and use new defaults
+  const isOldFormat = tasks.length > 0 && tasks.every(t => !t.group || typeof t.timerSeconds === 'undefined');
+  if(isOldFormat){
+    tasks = DEFAULT_TASKS.map(t=>({...t}));
+    saveTasks(tasks);
+  } else {
+    // Sync in any default-task edits/additions made since this day's list was first saved,
+    // while preserving each task's saved "done" state. Custom (extra) tasks are left untouched.
+    const savedById = Object.fromEntries(tasks.map(t=>[t.id, t]));
+    let changed = false;
+    const defaultIds = new Set(DEFAULT_TASKS.map(t=>t.id));
+    const mergedDefaults = DEFAULT_TASKS.map(def=>{
+      const saved = savedById[def.id];
+      if(!saved){ changed = true; return {...def}; }
+      return {...def, done: saved.done};
+    });
+    const extras = tasks.filter(t=>!defaultIds.has(t.id));
+    const newTasks = [...mergedDefaults, ...extras];
+    if(changed || JSON.stringify(newTasks) !== JSON.stringify(tasks)){
+      tasks = newTasks;
+      saveTasks(tasks);
+    }
+  }
+
+  const groupContainers = {
+    morning: document.getElementById('taskList-morning'),
+    learning: document.getElementById('taskList-learning'),
+    workout: document.getElementById('taskList-workout'),
+    evening: document.getElementById('taskList-evening'),
+    extra: document.getElementById('taskList-extra'),
+  };
+  const ringFg = document.getElementById('ringFg');
+  const ringLabel = document.getElementById('ringLabel');
+  const progressHeadline = document.getElementById('progressHeadline');
+  const progressSub = document.getElementById('progressSub');
+  const RING_CIRC = 163.4; // 2*pi*26
+
+  function makeTaskCard(t){
+    const card = document.createElement('div');
+    card.className = 'task-card'+(t.done?' done':'');
+    card.innerHTML = `
+      <div class="task-emoji">${t.emoji||'✅'}</div>
+      <div class="task-info">
+        <p class="t-name">${escapeHtml(t.name)}</p>
+        <p class="t-time">${escapeHtml(t.time||'')}</p>
+      </div>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+    `;
+    card.addEventListener('click',()=>{
+      if(t.group==='extra' || t.group==='morning' || t.group==='evening'){
+        // Simple checklist tasks: tap to toggle directly, no modal needed
+        t.done = !t.done;
+        saveTasks(tasks);
+        render();
+      } else {
+        openTaskModal(t);
+      }
+    });
+    return card;
+  }
+
+  function render(){
+    // Clear all group containers
+    Object.values(groupContainers).forEach(el=>{ if(el) el.innerHTML=''; });
+
+    const byGroup = {morning:[], learning:[], workout:[], evening:[], extra:[]};
+    tasks.forEach(t=>{ (byGroup[t.group]||byGroup.extra).push(t); });
+
+    Object.keys(byGroup).forEach(g=>{
+      const container = groupContainers[g];
+      if(!container) return;
+      if(byGroup[g].length===0 && g==='extra'){
+        container.innerHTML = '<div class="empty-note">No extra tasks yet.</div>';
+        return;
+      }
+      byGroup[g].forEach(t=>{
+        container.appendChild(makeTaskCard(t));
+      });
+    });
+
+    const doneCount = tasks.filter(t=>t.done).length;
+    const total = tasks.length;
+    const pct = total===0 ? 0 : Math.round((doneCount/total)*100);
+    ringLabel.textContent = pct+'%';
+    const offset = RING_CIRC - (RING_CIRC*pct/100);
+    ringFg.style.strokeDashoffset = offset;
+    progressSub.textContent = doneCount+' of '+total+' tasks done';
+    if(pct===0) progressHeadline.textContent = "Let's get started";
+    else if(pct<100) progressHeadline.textContent = 'Nice progress';
+    else progressHeadline.textContent = 'All done today!';
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('addTaskBtn').addEventListener('click', addTask);
+  document.getElementById('newTaskInput').addEventListener('keypress',(e)=>{
+    if(e.key==='Enter') addTask();
+  });
+  function addTask(){
+    const input = document.getElementById('newTaskInput');
+    const val = input.value.trim();
+    if(!val) return;
+    tasks.push({id:'t'+Date.now(), group:'extra', name:val, emoji:'✅', time:'', done:false});
+    saveTasks(tasks);
+    input.value='';
+    render();
+  }
+
+  document.getElementById('resetDayBtn').addEventListener('click', ()=>{
+    tasks.forEach(t=>t.done=false);
+    saveTasks(tasks);
+    render();
+  });
+
+  render();
+
+  // ---------- Timer ----------
+  let timerSeconds = 15*60;
+  let timerTotal = 15*60;
+  let timerInterval = null;
+  let timerRunning = false;
+
+  const timerDisplay = document.getElementById('timerDisplay');
+  const startPauseBtn = document.getElementById('startPauseBtn');
+  const resetTimerBtn = document.getElementById('resetTimerBtn');
+  const timerPhase = document.getElementById('timerPhase');
+  const presetChips = document.querySelectorAll('.preset-chip');
+
+  function renderTimer(){
+    const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+    const s = (timerSeconds%60).toString().padStart(2,'0');
+    timerDisplay.textContent = m+':'+s;
+  }
+
+  presetChips.forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      if(timerRunning) return;
+      presetChips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      const mins = parseInt(chip.dataset.mins,10);
+      timerSeconds = mins*60;
+      timerTotal = mins*60;
+      timerPhase.textContent = mins<=5 ? 'Break time' : 'Focus time';
+      renderTimer();
+    });
+  });
+
+  startPauseBtn.addEventListener('click', ()=>{
+    if(timerRunning){
+      clearInterval(timerInterval);
+      timerRunning = false;
+      startPauseBtn.textContent = 'Start';
+    } else {
+      timerRunning = true;
+      startPauseBtn.textContent = 'Pause';
+      timerInterval = setInterval(()=>{
+        timerSeconds--;
+        if(timerSeconds<=0){
+          timerSeconds = 0;
+          renderTimer();
+          clearInterval(timerInterval);
+          timerRunning = false;
+          startPauseBtn.textContent = 'Start';
+          timerPhase.textContent = "Time's up!";
+          if(navigator.vibrate) navigator.vibrate([200,100,200]);
+          return;
+        }
+        renderTimer();
+      },1000);
+    }
+  });
+
+  resetTimerBtn.addEventListener('click', ()=>{
+    clearInterval(timerInterval);
+    timerRunning = false;
+    startPauseBtn.textContent = 'Start';
+    timerSeconds = timerTotal;
+    const activeChip = document.querySelector('.preset-chip.active');
+    timerPhase.textContent = activeChip && parseInt(activeChip.dataset.mins,10)<=5 ? 'Break time' : 'Focus time';
+    renderTimer();
+  });
+
+  renderTimer();
+
+  // ---------- Task Modal ----------
+  const taskModal = document.getElementById('taskModal');
+  const modalEmoji = document.getElementById('modalEmoji');
+  const modalTaskName = document.getElementById('modalTaskName');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalDoneBanner = document.getElementById('modalDoneBanner');
+  const modalTimerDisplay = document.getElementById('modalTimerDisplay');
+  const modalTimerState = document.getElementById('modalTimerState');
+  const modalTimerBtn = document.getElementById('modalTimerBtn');
+  const modalVideoLink = document.getElementById('modalVideoLink');
+  const modalVideoLabel = document.getElementById('modalVideoLabel');
+  const modalSiteLink = document.getElementById('modalSiteLink');
+  const modalSiteLabel = document.getElementById('modalSiteLabel');
+
+  let activeTask = null;
+  let modalSecondsLeft = 0;
+  let modalTimerTotal = 0;
+  let modalInterval = null;
+  let modalRunning = false;
+
+  function formatMMSS(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = (sec%60).toString().padStart(2,'0');
+    return m+':'+s;
+  }
+
+  function openTaskModal(t){
+    activeTask = t;
+    clearInterval(modalInterval);
+    modalRunning = false;
+
+    modalEmoji.textContent = t.emoji || '✅';
+    modalTaskName.textContent = t.name;
+    modalDoneBanner.classList.toggle('show', !!t.done);
+
+    modalSecondsLeft = t.timerSeconds || 300;
+    modalTimerTotal = modalSecondsLeft;
+    modalTimerDisplay.textContent = formatMMSS(modalSecondsLeft);
+    modalTimerState.textContent = t.done ? 'Done' : 'Ready';
+    modalTimerBtn.textContent = 'Start';
+    modalTimerBtn.classList.remove('paused');
+    modalTimerBtn.disabled = !!t.done;
+
+    if(t.videoUrl){
+      modalVideoLink.style.display = 'flex';
+      modalVideoLink.href = t.videoUrl;
+      modalVideoLabel.textContent = 'Watch: ' + t.name;
+    } else if(t.videoQuery){
+      modalVideoLink.style.display = 'flex';
+      modalVideoLink.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(t.videoQuery);
+      modalVideoLabel.textContent = 'Find a video: ' + t.name;
+    } else {
+      modalVideoLink.style.display = 'none';
+    }
+
+    if(t.siteUrl){
+      modalSiteLink.style.display = 'flex';
+      modalSiteLink.href = t.siteUrl;
+      modalSiteLabel.textContent = t.siteLabel || 'Open site';
+    } else {
+      modalSiteLink.style.display = 'none';
+    }
+
+    taskModal.classList.add('open');
+  }
+
+  function closeTaskModal(){
+    clearInterval(modalInterval);
+    modalRunning = false;
+    taskModal.classList.remove('open');
+    activeTask = null;
+  }
+
+  modalCloseBtn.addEventListener('click', closeTaskModal);
+  taskModal.addEventListener('click', (e)=>{
+    if(e.target === taskModal) closeTaskModal();
+  });
+
+  modalTimerBtn.addEventListener('click', ()=>{
+    if(!activeTask || activeTask.done) return;
+    if(modalRunning){
+      clearInterval(modalInterval);
+      modalRunning = false;
+      modalTimerBtn.textContent = 'Resume';
+      modalTimerBtn.classList.remove('paused');
+      modalTimerState.textContent = 'Paused';
+    } else {
+      modalRunning = true;
+      modalTimerBtn.textContent = 'Pause';
+      modalTimerBtn.classList.add('paused');
+      modalTimerState.textContent = 'In progress';
+      modalInterval = setInterval(()=>{
+        modalSecondsLeft--;
+        if(modalSecondsLeft<=0){
+          modalSecondsLeft = 0;
+          modalTimerDisplay.textContent = formatMMSS(0);
+          clearInterval(modalInterval);
+          modalRunning = false;
+          modalTimerState.textContent = 'Done';
+          modalTimerBtn.textContent = 'Completed';
+          modalTimerBtn.disabled = true;
+          if(navigator.vibrate) navigator.vibrate([200,100,200]);
+          // Mark task done since the full timer completed
+          if(activeTask){
+            activeTask.done = true;
+            saveTasks(tasks);
+            modalDoneBanner.classList.add('show');
+            render();
+          }
+          return;
+        }
+        modalTimerDisplay.textContent = formatMMSS(modalSecondsLeft);
+      },1000);
+    }
+  });
+})();
+</script>
+</body>
+</html>
